@@ -15,6 +15,8 @@ COPY --from=deps /workspace/node_modules ./node_modules
 COPY --from=deps /workspace/apps/web/node_modules ./apps/web/node_modules
 COPY --from=deps /workspace/packages ./packages
 COPY . .
+ARG NEXT_PUBLIC_DOCUMENT_STUDIO_API=http://localhost:8001
+ENV NEXT_PUBLIC_DOCUMENT_STUDIO_API=$NEXT_PUBLIC_DOCUMENT_STUDIO_API
 RUN pnpm --filter @ithute/document-studio-web build
 
 FROM node:22-alpine AS runner
