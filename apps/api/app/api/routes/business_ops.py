@@ -5,8 +5,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query, Response
 
 from app.api.deps import DbSession
-from app.document_renderer import render_docx, render_pdf
-from app.html_renderer import render_html
+from app.premium_renderer import render_docx, render_html, render_pdf
 from app.schemas.business_ops import (
     ApprovalDecision,
     ApprovalRuleCreate,
