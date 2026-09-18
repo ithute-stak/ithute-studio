@@ -157,9 +157,9 @@ def test_contract_catalog_api_and_combined_lesotho_catalog():
         combined = client.get("/v1/templates/catalog/lesotho")
         assert combined.status_code == 200
         catalog = combined.json()
-        assert catalog["packCount"] == 31
-        assert catalog["documentTypeCount"] == 297
-        assert catalog["templateCount"] == 1485
+        assert catalog["packCount"] == 32
+        assert catalog["documentTypeCount"] == 347
+        assert catalog["templateCount"] == 1735
 
         filtered = client.get(
             "/v1/templates",
