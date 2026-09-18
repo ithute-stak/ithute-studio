@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     api_port: int = 8000
     database_url: str = DEFAULT_DATABASE_URL
     cors_origins: str = "http://localhost:3000"
+    storage_root: str = "data/studio"
+    max_pdf_upload_mb: int = 75
 
     model_config = SettingsConfigDict(
         env_prefix="ITHUTE_STUDIO_",
@@ -53,6 +55,8 @@ class Settings(BaseSettings):
             )
         if any(not origin.startswith("https://") for origin in self.cors_origin_list):
             raise ValueError("Production CORS origins must use HTTPS")
+        if not self.storage_root.strip():
+            raise ValueError("ITHUTE_STUDIO_STORAGE_ROOT must be configured")
         return self
 
 

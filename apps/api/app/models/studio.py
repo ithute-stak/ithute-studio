@@ -44,3 +44,28 @@ class StudioDocument(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now(), index=True
     )
+
+
+class StudioPdfProject(Base):
+    __tablename__ = "studio_pdf_projects"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    name: Mapped[str] = mapped_column(String(240), nullable=False, index=True)
+    original_filename: Mapped[str] = mapped_column(String(512), nullable=False)
+    source_path: Mapped[str] = mapped_column(String(1200), nullable=False)
+    page_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    page_order: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    page_metadata: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    page_rotations: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    edits: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    version: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=1, server_default="1"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), index=True
+    )

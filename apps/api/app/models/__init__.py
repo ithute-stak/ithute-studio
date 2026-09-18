@@ -1,3 +1,3 @@
-from app.models.studio import StudioDocument, StudioTemplate
+from app.models.studio import StudioDocument, StudioPdfProject, StudioTemplate
 
-__all__ = ["StudioDocument", "StudioTemplate"]
+__all__ = ["StudioDocument", "StudioPdfProject", "StudioTemplate"]

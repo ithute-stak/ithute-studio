@@ -8,3 +8,7 @@ alembic==1.19.2
 python-docx>=1.2,<2
 reportlab>=4.4,<5
 qrcode[pil]>=8,<9
+python-multipart>=0.0.20,<1
+pypdf>=6,<7
+pypdfium2>=5,<6
+pillow>=12,<13
