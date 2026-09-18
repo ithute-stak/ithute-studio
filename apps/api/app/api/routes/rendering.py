@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response
 
-from app.document_renderer import render_docx, render_pdf
-from app.html_renderer import render_html
+from app.premium_renderer import render_docx, render_html, render_pdf
 from app.schemas.studio import RenderRequest
 
 router = APIRouter(prefix="/v1", tags=["rendering"])
