@@ -1,0 +1,5 @@
+import type { IthuteDocumentV1 } from "@ithute/document-schema";
+export interface VerificationRecord { documentId:string; version:number; sha256:string; finalizedAt:string; verificationCode:string; }
+function stable(value:unknown):string{if(Array.isArray(value))return `[${value.map(stable).join(",")}]`;if(value&&typeof value==="object")return `{${Object.entries(value as Record<string,unknown>).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>`${JSON.stringify(k)}:${stable(v)}`).join(",")}}`;return JSON.stringify(value);}
+export async function sha256Document(document:IthuteDocumentV1){const bytes=new TextEncoder().encode(stable(document));const digest=await crypto.subtle.digest("SHA-256",bytes);return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,"0")).join("");}
+export async function createVerificationRecord(document:IthuteDocumentV1):Promise<VerificationRecord>{const hash=await sha256Document(document);return {documentId:document.id,version:document.version,sha256:hash,finalizedAt:new Date().toISOString(),verificationCode:`ITH-${document.id.slice(0,8).toUpperCase()}-${hash.slice(0,8).toUpperCase()}`};}

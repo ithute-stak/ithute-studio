@@ -1,0 +1,19 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports: ["3000:3000"]
+    environment:
+      NEXT_PUBLIC_DOCUMENT_STUDIO_API: http://localhost:8000
+    depends_on: [api]
+  api:
+    build:
+      context: apps/api
+    ports: ["8000:8000"]
+    environment:
+      DOCUMENT_STUDIO_DB: /data/document_studio.sqlite3
+    volumes:
+      - studio_data:/data
+volumes:
+  studio_data:
