@@ -12,6 +12,10 @@ from app.services.accounting_templates import (
     get_accounting_template,
     list_accounting_templates,
 )
+from app.services.lesotho_template_packs import (
+    get_lesotho_template,
+    list_lesotho_templates,
+)
 
 JsonObject = dict[str, Any]
 
@@ -61,7 +65,9 @@ async def list_templates(session: AsyncSession) -> list[JsonObject]:
     custom = [_template_payload(row) for row in rows]
     custom_ids = {item["id"] for item in custom}
     built_ins = [
-        item for item in list_accounting_templates() if item["id"] not in custom_ids
+        item
+        for item in list_accounting_templates() + list_lesotho_templates()
+        if item["id"] not in custom_ids
     ]
     return custom + built_ins
 
@@ -77,7 +83,8 @@ async def get_template(
     row = await session.get(StudioTemplate, identifier)
     if row:
         return _template_payload(row)
-    return get_accounting_template(str(identifier))
+    builtin_id = str(identifier)
+    return get_accounting_template(builtin_id) or get_lesotho_template(builtin_id)
 
 
 async def put_template(
