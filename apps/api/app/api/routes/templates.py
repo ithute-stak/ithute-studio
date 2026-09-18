@@ -6,6 +6,9 @@ from app.api.deps import DbSession
 from app.schemas.studio import ResolveTemplateRequest
 from app.services import studio_store
 from app.services.accounting_templates import accounting_catalog_metadata
+from app.services.institution_contract_templates import (
+    institution_contract_catalog_metadata,
+)
 from app.services.lesotho_template_packs import lesotho_catalog_metadata
 from app.template_engine import resolve_doc_json
 
@@ -26,9 +29,26 @@ async def accounting_catalog() -> dict[str, Any]:
     return accounting_catalog_metadata()
 
 
+@router.get("/catalog/institution-contracts")
+async def institution_contract_catalog() -> dict[str, Any]:
+    return institution_contract_catalog_metadata()
+
+
 @router.get("/catalog/lesotho")
 async def lesotho_catalog() -> dict[str, Any]:
-    return lesotho_catalog_metadata()
+    catalog = lesotho_catalog_metadata()
+    contracts = institution_contract_catalog_metadata()
+    catalog["packCount"] = int(catalog["packCount"]) + int(
+        contracts["institutionCount"]
+    )
+    catalog["documentTypeCount"] = int(catalog["documentTypeCount"]) + int(
+        contracts["documentTypeCount"]
+    )
+    catalog["templateCount"] = int(catalog["templateCount"]) + int(
+        contracts["templateCount"]
+    )
+    catalog["packs"] = list(catalog["packs"]) + list(contracts["packs"])
+    return catalog
 
 
 @router.get("")
@@ -36,6 +56,7 @@ async def list_templates(
     session: DbSession,
     category: str | None = None,
     pack: str | None = None,
+    institution: str | None = None,
     document_type: str | None = None,
     style: str | None = None,
     search: str | None = None,
@@ -45,8 +66,16 @@ async def list_templates(
         items = [item for item in items if str(item.get("category")) == category]
     if pack:
         items = [item for item in items if str(item.get("pack")) == pack]
+    if institution:
+        items = [
+            item for item in items if str(item.get("institution")) == institution
+        ]
     if document_type:
-        items = [item for item in items if str(item.get("documentType")) == document_type]
+        items = [
+            item
+            for item in items
+            if str(item.get("documentType")) == document_type
+        ]
     if style:
         items = [item for item in items if str(item.get("stylePreset")) == style]
     if search:
@@ -60,6 +89,7 @@ async def list_templates(
                     str(item.get("name") or ""),
                     str(item.get("description") or ""),
                     str(item.get("collection") or ""),
+                    str(item.get("institutionLabel") or ""),
                     " ".join(str(tag) for tag in item.get("tags") or []),
                 ]
             ).casefold()
