@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from datetime import date
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from datetime import UTC, datetime
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from typing import Any
 
 from app.services.accounting_templates import FAMILY_TABLES, get_accounting_template
@@ -26,9 +26,9 @@ def _money(value: Decimal) -> float:
 
 def _sales_items(rows: list[object]) -> tuple[list[Json], Json]:
     prepared: list[Json] = []
-    subtotal = Decimal("0")
-    tax_total = Decimal("0")
-    discount_total = Decimal("0")
+    subtotal = Decimal(0)
+    tax_total = Decimal(0)
+    discount_total = Decimal(0)
 
     for raw in rows:
         row = deepcopy(raw) if isinstance(raw, dict) else {"description": str(raw)}
@@ -36,12 +36,12 @@ def _sales_items(rows: list[object]) -> tuple[list[Json], Json]:
         unit_price = _decimal(row.get("unitPrice"))
         base = quantity * unit_price
         discount = _decimal(row.get("discount"))
-        taxable = max(Decimal("0"), base - discount)
+        taxable = max(Decimal(0), base - discount)
         if row.get("tax") not in {None, ""}:
             tax = _decimal(row.get("tax"))
         else:
             tax_rate = _decimal(row.get("taxRate"))
-            tax = taxable * tax_rate / Decimal("100")
+            tax = taxable * tax_rate / Decimal(100)
         total = taxable + tax
 
         row["quantity"] = float(quantity)
@@ -64,7 +64,7 @@ def _sales_items(rows: list[object]) -> tuple[list[Json], Json]:
 
 
 def _sum_collection(rows: list[object]) -> Decimal:
-    total = Decimal("0")
+    total = Decimal(0)
     for raw in rows:
         if not isinstance(raw, dict):
             continue
@@ -82,7 +82,7 @@ def prepare_accounting_data(template: Json, incoming: Json) -> Json:
     if not isinstance(document, dict):
         document = {}
         data["document"] = document
-    document.setdefault("date", date.today().isoformat())
+    document.setdefault("date", datetime.now(UTC).date().isoformat())
     document.setdefault("currency", "LSL")
 
     totals = data.setdefault("totals", {})
@@ -91,7 +91,9 @@ def prepare_accounting_data(template: Json, incoming: Json) -> Json:
         data["totals"] = totals
 
     if family in {"sales", "purchase"}:
-        rows, calculated = _sales_items(data.get("items") if isinstance(data.get("items"), list) else [])
+        rows, calculated = _sales_items(
+            data.get("items") if isinstance(data.get("items"), list) else []
+        )
         data["items"] = rows
         amount_paid = _decimal(totals.get("amountPaid"))
         calculated["amountPaid"] = _money(amount_paid)
@@ -105,7 +107,10 @@ def prepare_accounting_data(template: Json, incoming: Json) -> Json:
         schema = accounting_form_schema(template)
         collection_path = schema.get("collectionPath")
         if collection_path and isinstance(data.get(str(collection_path)), list):
-            totals.setdefault("total", _money(_sum_collection(data[str(collection_path)])))
+            totals.setdefault(
+                "total",
+                _money(_sum_collection(data[str(collection_path)])),
+            )
 
     verification = data.setdefault("verification", {})
     if isinstance(verification, dict):
