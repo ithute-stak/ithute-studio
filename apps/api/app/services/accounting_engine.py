@@ -6,6 +6,7 @@ from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from typing import Any
 
 from app.services.accounting_templates import FAMILY_TABLES, get_accounting_template
+from app.services.business_document_templates import get_business_document_template
 
 Json = dict[str, Any]
 MONEY = Decimal("0.01")
@@ -75,6 +76,10 @@ def _sum_collection(rows: list[object]) -> Decimal:
     return total
 
 
+def _table_family(family: str) -> str:
+    return {"invoice": "sales", "statement": "ledger"}.get(family, family)
+
+
 def prepare_accounting_data(template: Json, incoming: Json) -> Json:
     data = deepcopy(incoming)
     family = str(template.get("family") or "sales")
@@ -90,7 +95,7 @@ def prepare_accounting_data(template: Json, incoming: Json) -> Json:
         totals = {}
         data["totals"] = totals
 
-    if family in {"sales", "purchase"}:
+    if family in {"sales", "purchase", "invoice"}:
         rows, calculated = _sales_items(
             data.get("items") if isinstance(data.get("items"), list) else []
         )
@@ -103,6 +108,23 @@ def prepare_accounting_data(template: Json, incoming: Json) -> Json:
         payments = data.get("payments") if isinstance(data.get("payments"), list) else []
         totals["total"] = _money(_sum_collection(payments))
         totals["balanceDue"] = 0.0
+    elif family == "statement":
+        transactions = data.get("transactions") if isinstance(data.get("transactions"), list) else []
+        totals.setdefault("total", _money(_sum_collection(transactions)))
+        statement = data.setdefault("statement", {})
+        if isinstance(statement, dict):
+            opening = _decimal(statement.get("openingBalance"))
+            debits = sum(
+                (_decimal(row.get("debit")) for row in transactions if isinstance(row, dict)),
+                Decimal(0),
+            )
+            credits = sum(
+                (_decimal(row.get("credit")) for row in transactions if isinstance(row, dict)),
+                Decimal(0),
+            )
+            statement["totalDebits"] = _money(debits)
+            statement["totalCredits"] = _money(credits)
+            statement["closingBalance"] = _money(opening + debits - credits)
     else:
         schema = accounting_form_schema(template)
         collection_path = schema.get("collectionPath")
@@ -125,7 +147,7 @@ def prepare_accounting_data(template: Json, incoming: Json) -> Json:
 
 def accounting_form_schema(template: Json) -> Json:
     family = str(template.get("family") or "sales")
-    table = FAMILY_TABLES.get(family)
+    table = FAMILY_TABLES.get(_table_family(family))
     collection_path = table[0] if table else None
     columns = []
     if table:
@@ -133,7 +155,7 @@ def accounting_form_schema(template: Json) -> Json:
             {"label": label, "path": path, "format": fmt or "text"}
             for label, path, fmt in table[1]
         ]
-    if family in {"sales", "purchase"}:
+    if family in {"sales", "purchase", "invoice"}:
         known = {str(item["path"]) for item in columns}
         for extra in (
             {"label": "Tax rate %", "path": "taxRate", "format": "number"},
@@ -142,6 +164,10 @@ def accounting_form_schema(template: Json) -> Json:
             if str(extra["path"]) not in known:
                 columns.insert(max(len(columns) - 1, 0), extra)
 
+    design = template.get("document", {}).get("design", {})
+    prefix = template.get("documentPrefix") or (
+        design.get("documentPrefix") if isinstance(design, dict) else None
+    )
     return {
         "templateId": template.get("id"),
         "documentType": template.get("documentType"),
@@ -149,7 +175,7 @@ def accounting_form_schema(template: Json) -> Json:
         "family": family,
         "stylePreset": template.get("stylePreset"),
         "styleName": template.get("styleName"),
-        "documentPrefix": template.get("documentPrefix"),
+        "documentPrefix": prefix,
         "collectionPath": collection_path,
         "collectionColumns": columns,
         "showCounterparty": family not in {"payroll", "payroll-summary"},
@@ -159,5 +185,7 @@ def accounting_form_schema(template: Json) -> Json:
 
 
 def get_accounting_form_schema(template_id: str) -> Json | None:
-    template = get_accounting_template(template_id)
+    template = get_accounting_template(template_id) or get_business_document_template(
+        template_id
+    )
     return accounting_form_schema(template) if template else None
