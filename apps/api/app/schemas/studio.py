@@ -50,6 +50,18 @@ class SaveDocumentRequest(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class AccountingPreviewRequest(BaseModel):
+    template_id: str = Field(alias="templateId")
+    data: JsonObject = Field(default_factory=dict)
+
+    model_config = {"populate_by_name": True}
+
+
+class AccountingRenderRequest(AccountingPreviewRequest):
+    format: Literal["pdf", "docx", "html"] = "pdf"
+    persist: bool = False
+
+
 class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
     service: str = "ithute-document-studio-api"

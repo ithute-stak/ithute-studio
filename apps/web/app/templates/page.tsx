@@ -79,7 +79,7 @@ export default function Templates() {
               : "Professional backend-rendered accounting templates with reusable data bindings."}
           </p>
         </div>
-        <Link className="ds-button primary" href="/editor">New blank document</Link>
+        <Link className="ds-button primary" href="/accounting/new">New accounting document</Link>
       </section>
 
       {catalog && (
@@ -151,7 +151,7 @@ export default function Templates() {
                   </div>
                   <h3>{item.name}</h3>
                   <p>{item.description}</p>
-                  <Link className="template-open" href={`/editor?templateId=${item.id}`}>Use template →</Link>
+                  <Link className="template-open" href={`/accounting/new?templateId=${item.id}`}>Use template →</Link>
                 </div>
               </article>
             );
