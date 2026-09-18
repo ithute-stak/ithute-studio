@@ -138,9 +138,9 @@ def test_lesotho_catalog_api_and_pack_filter():
         catalog = client.get("/v1/templates/catalog/lesotho")
         assert catalog.status_code == 200
         payload = catalog.json()
-        assert payload["packCount"] == 16
-        assert payload["documentTypeCount"] == 222
-        assert payload["templateCount"] == 1110
+        assert payload["packCount"] == 31
+        assert payload["documentTypeCount"] == 297
+        assert payload["templateCount"] == 1485
         assert payload["jurisdiction"] == "Kingdom of Lesotho"
 
         templates = client.get(
