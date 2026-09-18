@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.accounting import router as accounting_router
+from app.api.routes.business_ops import router as business_ops_router
 from app.api.routes.documents import router as documents_router
 from app.api.routes.health import router as health_router
 from app.api.routes.pdf_collaboration import router as pdf_collaboration_router
@@ -14,10 +15,10 @@ settings = get_settings()
 
 app = FastAPI(
     title=settings.app_name,
-    version="0.5.0",
+    version="0.6.0",
     description=(
         "Product-neutral document editing, PDF platform services, accounting issuance, "
-        "template resolution and backend rendering API."
+        "business document operations, template resolution and backend rendering API."
     ),
     docs_url=None if settings.environment == "production" else "/docs",
     redoc_url=None if settings.environment == "production" else "/redoc",
@@ -36,5 +37,6 @@ app.include_router(templates_router)
 app.include_router(documents_router)
 app.include_router(rendering_router)
 app.include_router(accounting_router)
+app.include_router(business_ops_router)
 app.include_router(pdf_studio_router)
 app.include_router(pdf_collaboration_router)
