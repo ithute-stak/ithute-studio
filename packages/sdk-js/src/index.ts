@@ -1,5 +1,13 @@
 import type { IthuteDocumentV1, SourceReference } from "@ithute/document-schema";
-import type { IthutePdfProjectV1, PdfExportProfile } from "@ithute/pdf-schema";
+import type {
+  IthutePdfProjectV1,
+  PdfAccessGrant,
+  PdfExportProfile,
+  PdfPrincipalType,
+  PdfProjectRole,
+  PdfWebhookDelivery,
+  PdfWebhookSubscription,
+} from "@ithute/pdf-schema";
 
 export class IthuteDocumentStudioClient {
   constructor(public readonly baseUrl:string, private readonly token?:string){}
@@ -13,6 +21,7 @@ export class IthuteDocumentStudioClient {
   private async request<T>(path:string,init:RequestInit={}):Promise<T>{
     const response=await fetch(`${this.baseUrl.replace(/\/$/,"")}${path}`,{...init,headers:this.headers(init)});
     if(!response.ok)throw new Error(`Document Studio ${response.status}: ${await response.text()}`);
+    if(response.status===204)return undefined as T;
     return response.json() as Promise<T>;
   }
 
@@ -50,6 +59,21 @@ export class IthuteDocumentStudioClient {
   }
   listPdfJobs(id:string){return this.request<Array<Record<string,unknown>>>(`/v1/pdf/projects/${id}/jobs`);}
   listPdfAudit(id:string){return this.request<Array<Record<string,unknown>>>(`/v1/pdf/projects/${id}/audit`);}
+  listPdfAccess(id:string){return this.request<PdfAccessGrant[]>(`/v1/pdf/projects/${id}/access`);}
+  grantPdfAccess(id:string,principalType:PdfPrincipalType,principalId:string,role:PdfProjectRole){
+    return this.request<PdfAccessGrant>(`/v1/pdf/projects/${id}/access`,{method:"POST",body:JSON.stringify({principalType,principalId,role})});
+  }
+  revokePdfAccess(id:string,grantId:string){
+    return this.request<void>(`/v1/pdf/projects/${id}/access/${grantId}`,{method:"DELETE"});
+  }
+  listPdfWebhooks(id:string){return this.request<PdfWebhookSubscription[]>(`/v1/pdf/projects/${id}/webhooks`);}
+  createPdfWebhook(id:string,endpoint:string,events:string[]=["pdf.*"]){
+    return this.request<PdfWebhookSubscription>(`/v1/pdf/projects/${id}/webhooks`,{method:"POST",body:JSON.stringify({endpoint,events})});
+  }
+  deletePdfWebhook(id:string,webhookId:string){
+    return this.request<void>(`/v1/pdf/projects/${id}/webhooks/${webhookId}`,{method:"DELETE"});
+  }
+  listPdfWebhookDeliveries(id:string){return this.request<PdfWebhookDelivery[]>(`/v1/pdf/projects/${id}/webhook-deliveries`);}
   exportPdf(id:string,profile?:PdfExportProfile){
     return this.requestBlob(`/v1/pdf/projects/${id}/export`,{method:"POST",body:JSON.stringify(profile?{profile}:{})});
   }

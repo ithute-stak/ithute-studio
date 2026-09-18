@@ -1,7 +1,15 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint, func
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -49,7 +57,9 @@ class StudioPdfWebhookSubscription(Base):
         index=True,
     )
     endpoint: Mapped[str] = mapped_column(String(2000), nullable=False)
-    events: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+    events: Mapped[list] = mapped_column(
+        JSONB, nullable=False, default=list, server_default="[]"
+    )
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="true", index=True
     )
@@ -80,7 +90,9 @@ class StudioPdfWebhookDelivery(Base):
         index=True,
     )
     event_name: Mapped[str] = mapped_column(String(96), nullable=False, index=True)
-    payload: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    payload: Mapped[dict] = mapped_column(
+        JSONB, nullable=False, default=dict, server_default="{}"
+    )
     status: Mapped[str] = mapped_column(
         String(32), nullable=False, default="pending", server_default="pending", index=True
     )

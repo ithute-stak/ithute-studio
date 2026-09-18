@@ -1,6 +1,8 @@
 export type PdfCoordinateSpace = "pdf-points-top-left";
 export type PdfProjectStatus = "draft" | "review" | "approved" | "signed" | "locked" | "archived";
 export type PdfExportProfile = "standard" | "print" | "web" | "flattened";
+export type PdfProjectRole = "owner" | "editor" | "reviewer" | "viewer";
+export type PdfPrincipalType = "user" | "service";
 export type PdfObjectType =
   | "text"
   | "cover"
@@ -59,6 +61,38 @@ export interface PdfPageMetadata {
   index: number;
   width: number;
   height: number;
+}
+
+export interface PdfAccessGrant {
+  id: string;
+  projectId: string;
+  principalType: PdfPrincipalType;
+  principalId: string;
+  role: PdfProjectRole;
+  createdAt: string;
+}
+
+export interface PdfWebhookSubscription {
+  id: string;
+  projectId: string;
+  endpoint: string;
+  events: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PdfWebhookDelivery {
+  id: string;
+  subscriptionId: string;
+  projectId: string;
+  event: string;
+  payload: Record<string, unknown>;
+  status: string;
+  attemptCount: number;
+  lastError?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface IthutePdfProjectV1 {

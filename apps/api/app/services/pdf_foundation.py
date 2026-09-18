@@ -103,6 +103,10 @@ async def add_audit_event(
         details=details or {},
     )
     session.add(event)
+    await session.flush()
+    from app.services.pdf_collaboration import enqueue_webhook_deliveries
+
+    await enqueue_webhook_deliveries(session, event)
     return event
 
 

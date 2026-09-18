@@ -127,6 +127,56 @@ class IthuteDocumentStudioClient:
     def list_pdf_audit(self, project_id: str) -> list[dict[str, Any]]:
         return self._request("GET", f"/v1/pdf/projects/{project_id}/audit").json()
 
+    def list_pdf_access(self, project_id: str) -> list[dict[str, Any]]:
+        return self._request("GET", f"/v1/pdf/projects/{project_id}/access").json()
+
+    def grant_pdf_access(
+        self,
+        project_id: str,
+        principal_type: str,
+        principal_id: str,
+        role: str,
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/pdf/projects/{project_id}/access",
+            json={
+                "principalType": principal_type,
+                "principalId": principal_id,
+                "role": role,
+            },
+        ).json()
+
+    def revoke_pdf_access(self, project_id: str, grant_id: str) -> None:
+        self._request("DELETE", f"/v1/pdf/projects/{project_id}/access/{grant_id}")
+
+    def list_pdf_webhooks(self, project_id: str) -> list[dict[str, Any]]:
+        return self._request("GET", f"/v1/pdf/projects/{project_id}/webhooks").json()
+
+    def create_pdf_webhook(
+        self,
+        project_id: str,
+        endpoint: str,
+        events: list[str] | None = None,
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            f"/v1/pdf/projects/{project_id}/webhooks",
+            json={"endpoint": endpoint, "events": events or ["pdf.*"]},
+        ).json()
+
+    def delete_pdf_webhook(self, project_id: str, webhook_id: str) -> None:
+        self._request(
+            "DELETE",
+            f"/v1/pdf/projects/{project_id}/webhooks/{webhook_id}",
+        )
+
+    def list_pdf_webhook_deliveries(self, project_id: str) -> list[dict[str, Any]]:
+        return self._request(
+            "GET",
+            f"/v1/pdf/projects/{project_id}/webhook-deliveries",
+        ).json()
+
     def export_pdf(self, project_id: str, profile: str = "standard") -> bytes:
         return self._request(
             "POST",
