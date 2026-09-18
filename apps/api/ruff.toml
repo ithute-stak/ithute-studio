@@ -1,5 +1,6 @@
 [lint.per-file-ignores]
 "app/document_renderer.py" = ["I001", "FURB167", "BLE001", "S110", "RUF034"]
 "app/api/routes/pdf_studio.py" = ["B008"]
+"app/services/accounting_templates.py" = ["RUF059"]
 "app/services/pdf_foundation.py" = ["BLE001"]
 "app/services/pdf_studio.py" = ["BLE001", "S110", "S112"]

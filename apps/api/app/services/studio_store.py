@@ -8,7 +8,10 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.studio import StudioDocument, StudioTemplate
-from app.services.accounting_templates import get_accounting_template, list_accounting_templates
+from app.services.accounting_templates import (
+    get_accounting_template,
+    list_accounting_templates,
+)
 
 JsonObject = dict[str, Any]
 
@@ -57,7 +60,9 @@ async def list_templates(session: AsyncSession) -> list[JsonObject]:
     ).scalars().all()
     custom = [_template_payload(row) for row in rows]
     custom_ids = {item["id"] for item in custom}
-    built_ins = [item for item in list_accounting_templates() if item["id"] not in custom_ids]
+    built_ins = [
+        item for item in list_accounting_templates() if item["id"] not in custom_ids
+    ]
     return custom + built_ins
 
 
