@@ -16,15 +16,18 @@ from app.services.accounting_engine import (
     prepare_accounting_data,
 )
 from app.services.accounting_templates import get_accounting_template
+from app.services.business_document_templates import get_business_document_template
 from app.template_engine import generate_document
 
 router = APIRouter(prefix="/v1/accounting", tags=["accounting"])
 
 
 def _template(template_id: str) -> dict[str, Any]:
-    template = get_accounting_template(template_id)
+    template = get_accounting_template(template_id) or get_business_document_template(
+        template_id
+    )
     if template is None:
-        raise HTTPException(status_code=404, detail="Accounting template not found")
+        raise HTTPException(status_code=404, detail="Accounting/business template not found")
     return template
 
 
@@ -32,7 +35,12 @@ def _prepared(template: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]:
     prepared = prepare_accounting_data(template, data)
     verification = prepared.setdefault("verification", {})
     if isinstance(verification, dict) and verification.get("code") in {None, "", "DRAFT"}:
-        prefix = str(template.get("documentPrefix") or "DOC")
+        design = template.get("document", {}).get("design", {})
+        prefix = str(
+            template.get("documentPrefix")
+            or (design.get("documentPrefix") if isinstance(design, dict) else "")
+            or "DOC"
+        )
         verification["code"] = f"ITH-{prefix}-{uuid.uuid4().hex[:10].upper()}"
     return prepared
 
