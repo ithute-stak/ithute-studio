@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import io
 import re
 from copy import deepcopy
@@ -9,11 +10,11 @@ from typing import Any
 from docx import Document as DocxDocument
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Mm, Pt
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError
 from pypdf import PdfReader, PdfWriter
 from reportlab.lib import colors
-from reportlab.lib.utils import ImageReader
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas as pdf_canvas
 
 from app.document_renderer import render_docx as _render_docx
@@ -55,12 +56,12 @@ def _brand_name(document: Json) -> str:
 
 
 def _decode_data_uri(value: str) -> bytes | None:
-    match = re.match(r"^data:[^;,]+;base64,(.*)$", value, re.S)
+    match = re.match(r"^data:[^;,]+;base64,(.*)$", value, re.DOTALL)
     if not match:
         return None
     try:
-        return base64.b64decode(match.group(1))
-    except Exception:
+        return base64.b64decode(match.group(1), validate=True)
+    except (binascii.Error, ValueError):
         return None
 
 
@@ -139,10 +140,13 @@ def _brand_image(document: Json) -> bytes:
                 output = io.BytesIO()
                 rendered.save(output, format="PNG", optimize=True)
                 return output.getvalue()
-        except Exception:
-            pass
+        except (UnidentifiedImageError, OSError, ValueError):
+            logo = None
     design = document.get("design") or {}
-    return _monogram_png(_brand_name(document), str(design.get("primaryColor") or "#0B5EA8"))
+    return _monogram_png(
+        _brand_name(document),
+        str(design.get("primaryColor") or "#0B5EA8"),
+    )
 
 
 def _presentation_document(document: Json) -> Json:
@@ -172,7 +176,15 @@ def render_pdf(document: Json) -> bytes:
         y = height - 18.5 * mm
         box = 12.5 * mm
         overlay.setFillColor(colors.white)
-        overlay.roundRect(x - 0.8 * mm, y - 0.8 * mm, box + 1.6 * mm, box + 1.6 * mm, 2.7 * mm, fill=1, stroke=0)
+        overlay.roundRect(
+            x - 0.8 * mm,
+            y - 0.8 * mm,
+            box + 1.6 * mm,
+            box + 1.6 * mm,
+            2.7 * mm,
+            fill=1,
+            stroke=0,
+        )
         overlay.drawImage(
             ImageReader(io.BytesIO(logo)),
             x,
@@ -222,7 +234,8 @@ def render_html(document: Json) -> str:
     logo = _brand_image(prepared)
     encoded = base64.b64encode(logo).decode("ascii")
     brand = (
-        '<div class="ithute-brand-lockup" style="position:fixed;top:8mm;left:3mm;z-index:10;'
+        '<div class="ithute-brand-lockup" '
+        'style="position:fixed;top:8mm;left:3mm;z-index:10;'
         'width:12mm;height:12mm;padding:1mm;border-radius:3mm;background:#fff;'
         'box-shadow:0 2px 8px rgba(15,23,42,.12)">'
         f'<img src="data:image/png;base64,{encoded}" alt="Company logo" '
