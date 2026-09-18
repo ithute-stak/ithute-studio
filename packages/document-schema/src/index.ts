@@ -22,6 +22,22 @@ export interface DocumentSettings {
   pageNumbering?: { enabled: boolean; startAt: number; format: "1" | "i" | "I" | "a" | "A"; position: "header" | "footer" };
 }
 
+export interface DocumentDesign {
+  preset?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  textColor?: string;
+  mutedColor?: string;
+  borderColor?: string;
+  fontFamily?: string;
+  headerStyle?: "band" | "split" | "left-accent" | "minimal" | "ledger" | string;
+  footerStyle?: "line" | "band" | "double-line" | "minimal" | string;
+  documentLabel?: string;
+  documentPrefix?: string;
+  logoUrl?: string;
+}
+
 export interface DocumentProperties {
   title: string;
   subject?: string;
@@ -48,6 +64,7 @@ export interface IthuteDocumentV1 {
   templateId?: string;
   properties: DocumentProperties;
   settings: DocumentSettings;
+  design?: DocumentDesign;
   header: TiptapJson;
   body: TiptapJson;
   footer: TiptapJson;
