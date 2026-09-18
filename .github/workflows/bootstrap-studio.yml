@@ -3,7 +3,7 @@ name: Bootstrap Studio Source
 on:
   push:
     paths:
-      - bootstrap/source.tgz.b64
+      - bootstrap/source.part-*
       - .github/workflows/bootstrap-studio.yml
 
 permissions:
@@ -20,7 +20,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          base64 --decode bootstrap/source.tgz.b64 > /tmp/ithute-document-studio.tgz
+          cat bootstrap/source.part-* | base64 --decode > /tmp/ithute-document-studio.tgz
           tar -xzf /tmp/ithute-document-studio.tgz -C .
           rm -rf bootstrap
           rm -f .github/workflows/bootstrap-studio.yml
