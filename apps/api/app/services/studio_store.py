@@ -12,6 +12,10 @@ from app.services.accounting_templates import (
     get_accounting_template,
     list_accounting_templates,
 )
+from app.services.business_document_templates import (
+    get_business_document_template,
+    list_business_document_templates,
+)
 from app.services.institution_contract_templates import (
     get_institution_contract_template,
     list_institution_contract_templates,
@@ -74,6 +78,7 @@ async def list_templates(session: AsyncSession) -> list[JsonObject]:
             list_accounting_templates()
             + list_lesotho_templates()
             + list_institution_contract_templates()
+            + list_business_document_templates()
         )
         if item["id"] not in custom_ids
     ]
@@ -96,6 +101,7 @@ async def get_template(
         get_accounting_template(builtin_id)
         or get_lesotho_template(builtin_id)
         or get_institution_contract_template(builtin_id)
+        or get_business_document_template(builtin_id)
     )
 
 
