@@ -23,7 +23,7 @@ jobs:
           cat bootstrap/source.part-* | base64 --decode > /tmp/ithute-document-studio.tgz
           tar -xzf /tmp/ithute-document-studio.tgz -C .
           rm -rf bootstrap
-          rm -f .github/workflows/bootstrap-studio.yml
+          rm -f .github/workflows/ci.yml
       - name: Commit source tree
         shell: bash
         run: |
