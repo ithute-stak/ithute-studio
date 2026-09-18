@@ -6,6 +6,7 @@ from app.api.deps import DbSession
 from app.schemas.studio import ResolveTemplateRequest
 from app.services import studio_store
 from app.services.accounting_templates import accounting_catalog_metadata
+from app.services.business_document_templates import business_document_catalog_metadata
 from app.services.institution_contract_templates import (
     institution_contract_catalog_metadata,
 )
@@ -29,6 +30,11 @@ async def accounting_catalog() -> dict[str, Any]:
     return accounting_catalog_metadata()
 
 
+@router.get("/catalog/business-documents")
+async def business_document_catalog() -> dict[str, Any]:
+    return business_document_catalog_metadata()
+
+
 @router.get("/catalog/institution-contracts")
 async def institution_contract_catalog() -> dict[str, Any]:
     return institution_contract_catalog_metadata()
@@ -38,16 +44,21 @@ async def institution_contract_catalog() -> dict[str, Any]:
 async def lesotho_catalog() -> dict[str, Any]:
     catalog = lesotho_catalog_metadata()
     contracts = institution_contract_catalog_metadata()
+    business = business_document_catalog_metadata()
     catalog["packCount"] = int(catalog["packCount"]) + int(
         contracts["institutionCount"]
-    )
+    ) + 1
     catalog["documentTypeCount"] = int(catalog["documentTypeCount"]) + int(
         contracts["documentTypeCount"]
-    )
+    ) + int(business["documentTypeCount"])
     catalog["templateCount"] = int(catalog["templateCount"]) + int(
         contracts["templateCount"]
+    ) + int(business["templateCount"])
+    catalog["packs"] = (
+        list(catalog["packs"])
+        + list(contracts["packs"])
+        + [dict(business["packMetadata"])]
     )
-    catalog["packs"] = list(catalog["packs"]) + list(contracts["packs"])
     return catalog
 
 
