@@ -12,9 +12,9 @@ settings = get_settings()
 
 app = FastAPI(
     title=settings.app_name,
-    version="0.2.0",
+    version="0.3.0",
     description=(
-        "Product-neutral document editing, PDF editing, template resolution and backend rendering API."
+        "Product-neutral document editing, PDF platform services, template resolution and backend rendering API."
     ),
     docs_url=None if settings.environment == "production" else "/docs",
     redoc_url=None if settings.environment == "production" else "/redoc",

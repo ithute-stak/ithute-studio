@@ -12,3 +12,4 @@ python-multipart>=0.0.20,<1
 pypdf>=6,<7
 pypdfium2>=5,<6
 pillow>=12,<13
+boto3>=1.42,<2

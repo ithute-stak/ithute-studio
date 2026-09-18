@@ -23,7 +23,9 @@ services:
       ITHUTE_STUDIO_DATABASE_URL: postgresql+asyncpg://ithute_studio:ithute_studio@postgres:5432/ithute_studio
       ITHUTE_STUDIO_CORS_ORIGINS: http://localhost:3000
       ITHUTE_STUDIO_STORAGE_ROOT: /data/studio
+      ITHUTE_STUDIO_STORAGE_BACKEND: local
       ITHUTE_STUDIO_MAX_PDF_UPLOAD_MB: 75
+      ITHUTE_STUDIO_MAX_PDF_ASSET_MB: 25
     volumes:
       - studio_file_data:/data/studio
     depends_on:

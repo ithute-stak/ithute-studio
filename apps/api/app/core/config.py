@@ -17,7 +17,14 @@ class Settings(BaseSettings):
     database_url: str = DEFAULT_DATABASE_URL
     cors_origins: str = "http://localhost:3000"
     storage_root: str = "data/studio"
+    storage_backend: str = "local"
+    object_storage_bucket: str = ""
+    object_storage_endpoint_url: str | None = None
+    object_storage_region: str | None = None
+    object_storage_access_key: str = ""
+    object_storage_secret_key: str = ""
     max_pdf_upload_mb: int = 75
+    max_pdf_asset_mb: int = 25
 
     model_config = SettingsConfigDict(
         env_prefix="ITHUTE_STUDIO_",
@@ -30,7 +37,18 @@ class Settings(BaseSettings):
         return [item.strip() for item in self.cors_origins.split(",") if item.strip()]
 
     @model_validator(mode="after")
-    def validate_production_settings(self):
+    def validate_settings(self):
+        backend = self.storage_backend.lower().strip()
+        if backend not in {"local", "s3", "minio"}:
+            raise ValueError("ITHUTE_STUDIO_STORAGE_BACKEND must be local, s3, or minio")
+        if backend in {"s3", "minio"}:
+            if not self.object_storage_bucket.strip():
+                raise ValueError("Object storage bucket must be configured")
+            if not self.object_storage_access_key or not self.object_storage_secret_key:
+                raise ValueError("Object storage credentials must be configured")
+            if backend == "minio" and not self.object_storage_endpoint_url:
+                raise ValueError("MinIO requires ITHUTE_STUDIO_OBJECT_STORAGE_ENDPOINT_URL")
+
         if self.environment.lower() != "production":
             return self
 
