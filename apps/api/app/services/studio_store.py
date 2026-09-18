@@ -24,6 +24,7 @@ from app.services.lesotho_template_packs import (
     get_lesotho_template,
     list_lesotho_templates,
 )
+from app.services.template_presentation import brand_template, brand_templates
 
 JsonObject = dict[str, Any]
 
@@ -74,7 +75,7 @@ async def list_templates(session: AsyncSession) -> list[JsonObject]:
     custom_ids = {item["id"] for item in custom}
     built_ins = [
         item
-        for item in (
+        for item in brand_templates(
             list_accounting_templates()
             + list_lesotho_templates()
             + list_institution_contract_templates()
@@ -97,12 +98,13 @@ async def get_template(
     if row:
         return _template_payload(row)
     builtin_id = str(identifier)
-    return (
+    built_in = (
         get_accounting_template(builtin_id)
         or get_lesotho_template(builtin_id)
         or get_institution_contract_template(builtin_id)
         or get_business_document_template(builtin_id)
     )
+    return brand_template(built_in) if built_in else None
 
 
 async def put_template(
