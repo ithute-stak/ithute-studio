@@ -1,19 +1,41 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ithute_studio
+      POSTGRES_USER: ithute_studio
+      POSTGRES_PASSWORD: ithute_studio
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ithute_studio -d ithute_studio"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - studio_postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: apps/api
+    ports:
+      - "8000:8000"
+    environment:
+      ITHUTE_STUDIO_ENVIRONMENT: development
+      ITHUTE_STUDIO_DATABASE_URL: postgresql+asyncpg://ithute_studio:ithute_studio@postgres:5432/ithute_studio
+      ITHUTE_STUDIO_CORS_ORIGINS: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    ports: ["3000:3000"]
+    ports:
+      - "3000:3000"
     environment:
       NEXT_PUBLIC_DOCUMENT_STUDIO_API: http://localhost:8000
-    depends_on: [api]
-  api:
-    build:
-      context: apps/api
-    ports: ["8000:8000"]
-    environment:
-      DOCUMENT_STUDIO_DB: /data/document_studio.sqlite3
-    volumes:
-      - studio_data:/data
+    depends_on:
+      - api
+
 volumes:
-  studio_data:
+  studio_postgres_data:

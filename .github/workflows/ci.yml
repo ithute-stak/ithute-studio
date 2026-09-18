@@ -1,25 +1,69 @@
 name: CI
+
 on:
   push:
   pull_request:
+
+permissions:
+  contents: read
+
 jobs:
   web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 10.17.1 }
+        with:
+          version: 10.17.1
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm --filter @ithute/document-studio-web build
+
   api:
+    name: FastAPI + Alembic
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ithute_studio
+          POSTGRES_USER: ithute_studio
+          POSTGRES_PASSWORD: ithute_studio
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ithute_studio -d ithute_studio"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      ITHUTE_STUDIO_ENVIRONMENT: test
+      ITHUTE_STUDIO_DATABASE_URL: postgresql+asyncpg://ithute_studio:ithute_studio@127.0.0.1:5432/ithute_studio
+      ITHUTE_STUDIO_CORS_ORIGINS: http://localhost:3000
+    defaults:
+      run:
+        working-directory: apps/api
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.13' }
-      - run: pip install -r apps/api/requirements-dev.txt
-      - run: cd apps/api && PYTHONPATH=. pytest -q
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            apps/api/requirements.txt
+            apps/api/requirements-dev.txt
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Ruff
+        run: python -m ruff check app tests alembic
+      - name: Apply migrations
+        run: python -m alembic upgrade head
+      - name: Check model migration sync
+        run: python -m alembic check
+      - name: Migration rollback smoke test
+        run: python -m alembic downgrade -1 && python -m alembic upgrade head
+      - name: Pytest
+        run: PYTHONPATH=. python -m pytest -q
