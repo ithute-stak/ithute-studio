@@ -5,7 +5,8 @@ export type TemplateCategory =
   | "education" | "fleet" | "construction" | "risk" | "payments" | "government-official" | "custom";
 
 export type JsonObject = Record<string, unknown>;
-export type TiptapJson = { type: string; attrs?: JsonObject; content?: TiptapJson[]; marks?: JsonObject[]; text?: string };
+export type TiptapMark = { type: string; attrs?: JsonObject };
+export type TiptapJson = { type: string; attrs?: JsonObject; content?: TiptapJson[]; marks?: TiptapMark[]; text?: string };
 
 export interface PageMarginsMm { top: number; right: number; bottom: number; left: number; }
 
