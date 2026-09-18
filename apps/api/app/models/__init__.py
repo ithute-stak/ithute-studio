@@ -1,3 +1,16 @@
+from app.models.business_ops import (
+    StudioApprovalRule,
+    StudioBusinessParty,
+    StudioDocumentApproval,
+    StudioDocumentDelivery,
+    StudioDocumentPayment,
+    StudioDocumentRegister,
+    StudioDocumentRelation,
+    StudioDocumentSequence,
+    StudioOrganization,
+    StudioRecurringDocument,
+    StudioVerificationEvent,
+)
 from app.models.pdf_platform import (
     StudioPdfAccessGrant,
     StudioPdfWebhookDelivery,
@@ -14,7 +27,16 @@ from app.models.studio import (
 )
 
 __all__ = [
+    "StudioApprovalRule",
+    "StudioBusinessParty",
     "StudioDocument",
+    "StudioDocumentApproval",
+    "StudioDocumentDelivery",
+    "StudioDocumentPayment",
+    "StudioDocumentRegister",
+    "StudioDocumentRelation",
+    "StudioDocumentSequence",
+    "StudioOrganization",
     "StudioPdfAccessGrant",
     "StudioPdfAsset",
     "StudioPdfAuditEvent",
@@ -23,5 +45,7 @@ __all__ = [
     "StudioPdfRevision",
     "StudioPdfWebhookDelivery",
     "StudioPdfWebhookSubscription",
+    "StudioRecurringDocument",
     "StudioTemplate",
+    "StudioVerificationEvent",
 ]
