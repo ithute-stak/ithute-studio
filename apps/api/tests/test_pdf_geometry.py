@@ -1,6 +1,11 @@
 import pytest
 
-from app.services.pdf_geometry import PdfBounds, pdf_to_viewport, rotate_bounds, viewport_to_pdf
+from app.services.pdf_geometry import (
+    PdfBounds,
+    pdf_to_viewport,
+    rotate_bounds,
+    viewport_to_pdf,
+)
 
 
 def test_pdf_viewport_coordinate_round_trip():
