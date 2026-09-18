@@ -6,6 +6,7 @@ from app.api.deps import DbSession
 from app.schemas.studio import ResolveTemplateRequest
 from app.services import studio_store
 from app.services.accounting_templates import accounting_catalog_metadata
+from app.services.lesotho_template_packs import lesotho_catalog_metadata
 from app.template_engine import resolve_doc_json
 
 router = APIRouter(prefix="/v1/templates", tags=["templates"])
@@ -25,10 +26,16 @@ async def accounting_catalog() -> dict[str, Any]:
     return accounting_catalog_metadata()
 
 
+@router.get("/catalog/lesotho")
+async def lesotho_catalog() -> dict[str, Any]:
+    return lesotho_catalog_metadata()
+
+
 @router.get("")
 async def list_templates(
     session: DbSession,
     category: str | None = None,
+    pack: str | None = None,
     document_type: str | None = None,
     style: str | None = None,
     search: str | None = None,
@@ -36,6 +43,8 @@ async def list_templates(
     items = await studio_store.list_templates(session)
     if category:
         items = [item for item in items if str(item.get("category")) == category]
+    if pack:
+        items = [item for item in items if str(item.get("pack")) == pack]
     if document_type:
         items = [item for item in items if str(item.get("documentType")) == document_type]
     if style:
@@ -50,6 +59,7 @@ async def list_templates(
                 [
                     str(item.get("name") or ""),
                     str(item.get("description") or ""),
+                    str(item.get("collection") or ""),
                     " ".join(str(tag) for tag in item.get("tags") or []),
                 ]
             ).casefold()
